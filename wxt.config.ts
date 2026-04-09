@@ -34,6 +34,18 @@ export default defineConfig({
       'https://*.workable.com/*',
       'https://jobs.smartrecruiters.com/*',
       'https://api.smartrecruiters.com/*',
+      // India market port
+      'https://*.naukri.com/*',
+      'https://*.foundit.in/*',
+      'https://*.monsterindia.com/*',
+      'https://www.instahyre.com/*',
+      'https://instahyre.com/*',
+      'https://hirist.tech/*',
+      'https://*.hirist.tech/*',
+      'https://cutshort.io/*',
+      'https://*.cutshort.io/*',
+      'https://*.shine.com/*',
+      // LLM endpoint
       'https://api.anthropic.com/*',
     ],
     action: {

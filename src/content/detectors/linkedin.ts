@@ -1,6 +1,6 @@
 import type { JobPosting } from '../../shared/types';
 import type { Detector } from './types';
-import { markdownFromNode, pickLanguage, pickRemote, text } from './types';
+import { extractSalary, markdownFromNode, pickLanguage, pickRemote, text } from './types';
 
 export const linkedinDetector: Detector = {
   id: 'linkedin',
@@ -54,7 +54,7 @@ export const linkedinDetector: Detector = {
       role: title,
       location,
       remote: pickRemote(`${title} ${location ?? ''} ${descriptionMarkdown}`),
-      salary: extractSalaryFromDescription(descriptionMarkdown),
+      salary: extractSalary(descriptionMarkdown),
       descriptionMarkdown,
       language: pickLanguage(descriptionMarkdown),
       extractedAt: Date.now(),
@@ -70,11 +70,4 @@ function canonicalLinkedInUrl(): string {
   const match = window.location.pathname.match(/\/jobs\/view\/(\d+)/);
   if (match) return `https://www.linkedin.com/jobs/view/${match[1]}/`;
   return window.location.origin + window.location.pathname;
-}
-
-function extractSalaryFromDescription(md: string): string | null {
-  const m = md.match(
-    /(\$|€|£|USD|EUR|GBP|CHF)\s?\d{2,3}[.,]?\d{0,3}(?:\s?[-–to]\s?(?:\$|€|£)?\d{2,3}[.,]?\d{0,3})?/i,
-  );
-  return m ? m[0] : null;
 }

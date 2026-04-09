@@ -265,7 +265,29 @@ export const PORTAL_SOURCES = [
   'smartrecruiters',
   'linkedin',
   'workable',
+  // India-specific portals — added in the India market port.
+  'naukri',
+  'foundit',
+  'instahyre',
+  'hirist',
+  'cutshort',
+  'shine',
   'custom',
 ] as const;
 
 export type PortalSource = (typeof PORTAL_SOURCES)[number];
+
+// ---- Market region -------------------------------------------------------
+//
+// Controls prompt framing, currency default, and (later) i18n detector hints.
+// Adding a new region here means: (1) extending renderMarketContext in
+// src/background/llm/modes.ts, (2) adding a tile in the Onboarding market
+// step, (3) wiring a currency default in src/background/storage/profile.ts.
+
+export const MARKET_REGIONS = ['global', 'india'] as const;
+export type MarketRegion = (typeof MARKET_REGIONS)[number];
+
+export const MARKET_REGION_LABELS: Readonly<Record<MarketRegion, string>> = Object.freeze({
+  global: 'Global',
+  india: 'India',
+});

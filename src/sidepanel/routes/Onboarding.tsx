@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { useSettings } from '../hooks/useSettings';
-import { saveProfile, saveCv } from '../../background/storage/profile';
+import { getProfile, saveProfile, saveCv } from '../../background/storage/profile';
+import type { MarketRegion } from '../../shared/constants';
 
-const STEPS = ['welcome', 'apiKey', 'profile', 'cv', 'ready'] as const;
+const STEPS = ['welcome', 'apiKey', 'profile', 'market', 'cv', 'ready'] as const;
 type Step = (typeof STEPS)[number];
 
 export function Onboarding() {
@@ -16,6 +17,13 @@ export function Onboarding() {
   const [fullName, setFullName] = useState('');
   const [targetRoles, setTargetRoles] = useState('');
   const [cvText, setCvText] = useState('');
+  // Region defaults to whatever the timezone heuristic in
+  // buildDefaultProfile picked, so Indian users see India pre-selected.
+  const [region, setRegion] = useState<MarketRegion>('global');
+
+  useEffect(() => {
+    void getProfile().then((p) => setRegion(p.region));
+  }, []);
 
   if (!settings) return <div className="p-6 text-sm">Loading…</div>;
 
@@ -26,6 +34,12 @@ export function Onboarding() {
     await saveProfile({
       fullName,
       targetRoles: targetRoles.split(',').map((s) => s.trim()).filter(Boolean),
+      region,
+      salaryTarget: {
+        min: 0,
+        max: 0,
+        currency: region === 'india' ? 'INR' : 'USD',
+      },
     });
     if (cvText.trim()) await saveCv(cvText);
     await update({ onboardingComplete: true });
@@ -152,6 +166,73 @@ export function Onboarding() {
                     color: 'var(--color-ink)',
                   }}
                 />
+                <div className="flex gap-2">
+                  <Button intent="ghost" onClick={back}>
+                    Back
+                  </Button>
+                  <Button intent="accent" onClick={next} className="flex-1">
+                    Continue
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {step === 'market' && (
+              <>
+                <h2
+                  className="font-[var(--font-display)] text-[var(--text-xl)] font-medium"
+                  style={{ color: 'var(--color-ink)' }}
+                >
+                  Which job market?
+                </h2>
+                <p
+                  className="text-[var(--text-xs)]"
+                  style={{ color: 'var(--color-ink-faint)' }}
+                >
+                  Pick India to teach the scorer about LPA, CTC, notice period,
+                  ESOP norms, and metro relocation. You can change this anytime
+                  in Profile.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {(
+                    [
+                      { id: 'global', label: 'Global', sub: 'USD bands, default scoring' },
+                      { id: 'india', label: 'India', sub: 'LPA / CTC / ESOP-aware' },
+                    ] as const
+                  ).map((opt) => {
+                    const selected = region === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setRegion(opt.id)}
+                        className="p-4 rounded-[var(--radius-md)] border text-left transition-all"
+                        style={{
+                          borderColor: selected
+                            ? 'var(--color-accent)'
+                            : 'var(--color-border)',
+                          background: selected
+                            ? 'var(--color-accent-soft)'
+                            : 'var(--color-surface-sunk)',
+                          boxShadow: selected ? 'var(--shadow-md)' : undefined,
+                        }}
+                      >
+                        <div
+                          className="font-[var(--font-display)] font-medium text-[var(--text-base)]"
+                          style={{ color: 'var(--color-ink)' }}
+                        >
+                          {opt.label}
+                        </div>
+                        <div
+                          className="text-[var(--text-xs)] mt-1"
+                          style={{ color: 'var(--color-ink-faint)' }}
+                        >
+                          {opt.sub}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
                 <div className="flex gap-2">
                   <Button intent="ghost" onClick={back}>
                     Back

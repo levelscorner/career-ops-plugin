@@ -7,6 +7,7 @@ import { z } from 'zod';
 import {
   ARCHETYPE_VALUES,
   DIMENSION_KEYS,
+  MARKET_REGIONS,
   MODELS,
   PORTAL_SOURCES,
   STATUS_VALUES,
@@ -19,6 +20,7 @@ export const zStatus = z.enum(STATUS_VALUES);
 export const zArchetype = z.enum(ARCHETYPE_VALUES);
 export const zPortalSource = z.enum(PORTAL_SOURCES);
 export const zUiLanguage = z.enum(UI_LANGUAGES);
+export const zMarketRegion = z.enum(MARKET_REGIONS);
 export const zModelId = z.enum(MODELS.map((m) => m.id) as [string, ...string[]]);
 
 // ---- Job posting --------------------------------------------------------
@@ -111,6 +113,11 @@ export const zProfile = z.object({
   }),
   language: zUiLanguage,
   modesDir: z.enum(['en', 'de', 'fr', 'pt']),
+  /**
+   * Market region defaults to 'global' so existing Dexie rows (written
+   * before this field existed) validate without a migration.
+   */
+  region: zMarketRegion.default('global'),
   updatedAt: z.number(),
 });
 

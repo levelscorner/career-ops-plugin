@@ -70,9 +70,67 @@ export function pickLanguage(raw: string): JobPosting['language'] {
 
 export function pickRemote(raw: string): JobPosting['remote'] {
   const s = raw.toLowerCase();
-  if (/\b(100% remote|fully remote|remote only|remote-first)\b/.test(s)) return 'remote';
-  if (/\b(hybrid|3 days? (?:in|per week)|office [123] days)\b/.test(s)) return 'hybrid';
-  if (/\b(on-?site|in-?office|on-?premise)\b/.test(s)) return 'onsite';
+  // Priority order — more specific signals first.
+  //
+  //   1. Hard-remote idioms (100% remote, fully remote, WFH, remote-first).
+  //      Indian JDs treat "WFH" as the primary remote marker, so it MUST
+  //      beat any later "on-site" mention (which usually refers to
+  //      quarterly meetups in an otherwise-remote role).
+  //   2. Hybrid: 1-4 days / week, hybrid (N days), [1-4] days wfo.
+  //      A 5-day week is not hybrid — it's onsite.
+  //   3. Onsite: on-site / in-office / WFO only / 5 days wfo.
+  //   4. Any remaining mention of "remote" as a catch-all.
+  if (
+    /\b(100% remote|fully remote|remote only|remote[- ]first|wfh|work from home)\b/.test(s)
+  ) {
+    return 'remote';
+  }
+  if (
+    /\b(hybrid|[1-4] days? (?:in|per week|from office|wfo)|office [1-4] days|hybrid\s*\(\s*[1-4]\s*days?)\b/.test(
+      s,
+    )
+  ) {
+    return 'hybrid';
+  }
+  if (
+    /\b(on-?site|in-?office|on-?premise|work from office|wfo|5 days? (?:in|per week|from office|wfo)|based (?:in|at) (?:our )?office)\b/.test(
+      s,
+    )
+  ) {
+    return 'onsite';
+  }
   if (/\bremote\b/.test(s)) return 'remote';
   return 'unknown';
+}
+
+/**
+ * Extract a salary string from free-form JD text.
+ *
+ * Matches, in order of precedence:
+ *   1. Indian shorthand:  "12 LPA", "12-18 LPA", "12 lakhs", "1.5 Cr"
+ *   2. ₹ / Rs / INR:      "₹12,00,000", "Rs. 15 lakh", "INR 25,00,000"
+ *   3. Western currency:  "$120k", "€80,000", "£90k-£110k", "USD 150,000"
+ *
+ * Returns the raw matched substring so the downstream display can render it
+ * as-shipped ("12-18 LPA") instead of normalizing it into a number the user
+ * didn't write. Returns null if nothing matches.
+ *
+ * Shared by every detector via `./types` — each portal's extractor calls
+ * this once on either the JD body or (better) on any salary-specific DOM
+ * node the portal exposes.
+ */
+const LPA_RE =
+  /\b\d+(?:\.\d+)?\s*(?:-\s*\d+(?:\.\d+)?)?\s*(?:lpa|l\s*pa|lakhs?|lac|lacs|crores?|cr)\b/i;
+const INR_RE = /(?:₹|rs\.?|inr)\s?\d{1,3}(?:[,\s.]\d{2,3})*(?:\.\d+)?(?:\s*(?:lpa|lakhs?|cr))?/i;
+const WESTERN_RE =
+  /(?:\$|€|£|usd|eur|gbp|chf)\s?\d{1,3}(?:[.,]?\d{1,3})*(?:k)?(?:\s?[-–to]+\s?(?:\$|€|£)?\d{1,3}(?:[.,]?\d{1,3})*(?:k)?)?/i;
+
+export function extractSalary(raw: string): string | null {
+  if (!raw) return null;
+  return (
+    raw.match(LPA_RE)?.[0] ??
+    raw.match(INR_RE)?.[0] ??
+    raw.match(WESTERN_RE)?.[0] ??
+    null
+  );
 }

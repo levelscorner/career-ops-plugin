@@ -150,6 +150,7 @@ function safeParseProfile(raw: string): Profile {
       salaryTarget: { min: 0, max: 0, currency: 'USD' },
       language: 'en',
       modesDir: 'en',
+      region: 'global',
       updatedAt: 0,
     };
   }

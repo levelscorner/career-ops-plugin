@@ -5,6 +5,7 @@
 import type {
   Archetype,
   DimensionKey,
+  MarketRegion,
   ModelId,
   PortalSource,
   Status,
@@ -144,6 +145,12 @@ export interface Profile {
   language: UiLanguage;
   /** Which directory of bundled modes/*.md to use. Narrower than UiLanguage because 'es' modes aren't bundled yet. */
   modesDir: 'en' | 'de' | 'fr' | 'pt';
+  /**
+   * Market region. Controls prompt framing (LPA/CTC, notice period, ESOP
+   * norms for India) and default currency. Defaults to 'india' when the
+   * detected timezone is Asia/Kolkata — see DEFAULT_PROFILE.
+   */
+  region: MarketRegion;
   updatedAt: number;
 }
 

@@ -2,23 +2,45 @@
 // Each table has exactly one row keyed 'singleton'.
 
 import type { ArticleDigest, Customization, Cv, Profile } from '../../shared/types';
-import { DEFAULT_DIMENSION_WEIGHTS } from '../../shared/constants';
+import { DEFAULT_DIMENSION_WEIGHTS, type MarketRegion } from '../../shared/constants';
 import { getDb } from './db';
 
-const DEFAULT_PROFILE: Profile = Object.freeze({
-  id: 'singleton',
-  fullName: '',
-  email: '',
-  phone: '',
-  location: '',
-  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  links: [],
-  targetRoles: [],
-  salaryTarget: { min: 0, max: 0, currency: 'USD' },
-  language: 'en',
-  modesDir: 'en',
-  updatedAt: 0,
-});
+/**
+ * Guess the user's market region from their browser timezone so a first-run
+ * Indian user lands in India mode (INR + LPA-aware prompts) without having
+ * to touch Settings. Users outside India keep the global default.
+ */
+function detectRegion(): MarketRegion {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return tz === 'Asia/Kolkata' ? 'india' : 'global';
+  } catch {
+    return 'global';
+  }
+}
+
+function defaultCurrency(region: MarketRegion): string {
+  return region === 'india' ? 'INR' : 'USD';
+}
+
+function buildDefaultProfile(): Profile {
+  const region = detectRegion();
+  return {
+    id: 'singleton',
+    fullName: '',
+    email: '',
+    phone: '',
+    location: '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    links: [],
+    targetRoles: [],
+    salaryTarget: { min: 0, max: 0, currency: defaultCurrency(region) },
+    language: 'en',
+    modesDir: 'en',
+    region,
+    updatedAt: 0,
+  };
+}
 
 const DEFAULT_CUSTOMIZATION: Customization = Object.freeze({
   id: 'singleton',
@@ -34,7 +56,13 @@ const DEFAULT_CUSTOMIZATION: Customization = Object.freeze({
 export async function getProfile(): Promise<Profile> {
   const db = getDb();
   const stored = await db.profile.get('singleton');
-  return stored ?? { ...DEFAULT_PROFILE };
+  if (stored) {
+    // Backfill region for rows persisted before the India port. This is the
+    // no-migration path described in the plan: schema default + getter
+    // backfill means old rows keep working without a Dexie version bump.
+    return stored.region ? stored : { ...stored, region: detectRegion() };
+  }
+  return buildDefaultProfile();
 }
 
 export async function saveProfile(patch: Partial<Profile>): Promise<Profile> {

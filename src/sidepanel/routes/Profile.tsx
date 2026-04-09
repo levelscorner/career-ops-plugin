@@ -3,6 +3,11 @@ import { PageTransition } from '../components/ui/PageTransition';
 import { Button } from '../components/ui/Button';
 import { getProfile, saveProfile } from '../../background/storage/profile';
 import type { Profile as ProfileType } from '../../shared/types';
+import {
+  MARKET_REGIONS,
+  MARKET_REGION_LABELS,
+  type MarketRegion,
+} from '../../shared/constants';
 
 export function Profile() {
   const [profile, setProfile] = useState<ProfileType | null>(null);
@@ -50,6 +55,54 @@ export function Profile() {
             update({ targetRoles: v.split(',').map((s) => s.trim()).filter(Boolean) })
           }
         />
+        <label className="block">
+          <span
+            className="block text-[var(--text-xs)] uppercase tracking-[0.08em] mb-1"
+            style={{ color: 'var(--color-ink-faint)' }}
+          >
+            Market region
+          </span>
+          <select
+            value={profile.region}
+            onChange={(e) => {
+              const region = e.target.value as MarketRegion;
+              // Flip currency when the user switches regions — but only
+              // from the other region's default so we don't clobber a
+              // custom value the user deliberately picked.
+              const currency = profile.salaryTarget.currency;
+              const nextCurrency =
+                region === 'india' && (currency === 'USD' || !currency)
+                  ? 'INR'
+                  : region === 'global' && currency === 'INR'
+                    ? 'USD'
+                    : currency;
+              update({
+                region,
+                salaryTarget: { ...profile.salaryTarget, currency: nextCurrency },
+              });
+            }}
+            className="w-full h-9 px-3 rounded-[var(--radius-sm)] border text-[var(--text-sm)]"
+            style={{
+              background: 'var(--color-surface-sunk)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-ink)',
+            }}
+          >
+            {MARKET_REGIONS.map((r) => (
+              <option key={r} value={r}>
+                {MARKET_REGION_LABELS[r]}
+              </option>
+            ))}
+          </select>
+          <p
+            className="text-[var(--text-xs)] mt-1.5"
+            style={{ color: 'var(--color-ink-faint)' }}
+          >
+            {profile.region === 'india'
+              ? 'Evaluations use LPA / CTC / ESOP-aware scoring and flag notice-period blockers.'
+              : 'Default scoring. Salary bands in USD / EUR / GBP.'}
+          </p>
+        </label>
         <div className="grid grid-cols-3 gap-2">
           <Field
             label="Salary min"
