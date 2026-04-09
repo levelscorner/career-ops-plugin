@@ -1,0 +1,30 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@bg/*": ["src/background/*"],
+      "@shared/*": ["src/shared/*"],
+      "@sidepanel/*": ["src/sidepanel/*"]
+    }
+  },
+  "include": ["src", "scripts", "tests", "*.ts", "*.mts", "*.mjs"],
+  "exclude": ["node_modules", ".wxt", ".output", "dist"]
+}
