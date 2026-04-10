@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { marked } from 'marked';
@@ -47,6 +47,41 @@ export function Report() {
     },
     [toggles],
   );
+
+  const [waitedForData, setWaitedForData] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setWaitedForData(true), 3000);
+    return () => clearTimeout(t);
+  }, [id]);
+
+  useEffect(() => {
+    if (application && latest) setWaitedForData(true);
+  }, [application, latest]);
+
+  if (!waitedForData && (!application || !latest)) {
+    return (
+      <PageTransition>
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center">
+            <div
+              className="inline-block w-8 h-8 border-2 rounded-full animate-spin mb-3"
+              style={{
+                borderColor: 'var(--color-border)',
+                borderTopColor: 'var(--color-accent)',
+              }}
+            />
+            <p
+              className="text-[var(--text-sm)]"
+              style={{ color: 'var(--color-ink-faint)' }}
+            >
+              Loading report...
+            </p>
+          </div>
+        </div>
+      </PageTransition>
+    );
+  }
 
   if (!application || !latest) {
     return (

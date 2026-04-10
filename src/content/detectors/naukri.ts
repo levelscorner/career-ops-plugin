@@ -25,7 +25,9 @@ export const naukriDetector: Detector = {
   matches(url) {
     return (
       url.hostname.endsWith('naukri.com') &&
-      (/\/job-listings-/.test(url.pathname) || /\/jobs\//.test(url.pathname))
+      (/\/job-listings-/.test(url.pathname) ||
+        /\/jobs\//.test(url.pathname) ||
+        /\/job\//.test(url.pathname))
     );
   },
 

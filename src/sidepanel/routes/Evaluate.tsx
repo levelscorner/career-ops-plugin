@@ -29,6 +29,7 @@ export function Evaluate() {
   const navigate = useNavigate();
   const [pasted, setPasted] = useState('');
   const [url, setUrl] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const customization = useLiveQuery(() => getDb().customization.get('singleton'), []);
   const toggles: OutputToggles = {
@@ -44,6 +45,10 @@ export function Evaluate() {
     },
     [toggles],
   );
+
+  useEffect(() => {
+    if (status !== 'idle') setSubmitting(false);
+  }, [status]);
 
   useEffect(() => {
     if (status === 'done' && result) {
@@ -82,8 +87,9 @@ export function Evaluate() {
             <div className="flex justify-end">
               <Button
                 intent="accent"
-                disabled={pasted.trim().length < 80}
+                disabled={pasted.trim().length < 80 || submitting}
                 onClick={() => {
+                  setSubmitting(true);
                   void sendToBackground({
                     type: 'ui:evaluatePastedJd',
                     jd: pasted.trim(),
@@ -91,7 +97,7 @@ export function Evaluate() {
                   });
                 }}
               >
-                Evaluate
+                {submitting ? 'Evaluating\u2026' : 'Evaluate'}
               </Button>
             </div>
           </Card>
@@ -129,7 +135,7 @@ export function Evaluate() {
             {result?.application.role ?? 'Evaluating…'}
           </h2>
           <p className="text-[var(--text-sm)] truncate" style={{ color: 'var(--color-ink-soft)' }}>
-            {result?.application.company ?? 'Streaming A–F blocks…'}
+            {result?.application.company ?? 'Analyzing job description…'}
           </p>
         </div>
       </div>
@@ -271,7 +277,7 @@ export function Evaluate() {
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5">
         <ToggleSection
           label="Raw Output"
-          enabled={status === 'streaming' ? true : toggles.rawOutput}
+          enabled={toggles.rawOutput}
           onToggle={(next) => handleToggle('rawOutput', next)}
         >
           <pre

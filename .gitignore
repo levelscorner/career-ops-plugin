@@ -14,3 +14,7 @@ playwright-report/
 test-results/
 src/assets/modes.generated.ts
 .gstack/
+output/
+.playwright-mcp/
+e2e/screenshots/
+sidepanel-initial.png

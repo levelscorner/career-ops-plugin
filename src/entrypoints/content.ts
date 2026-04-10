@@ -16,6 +16,7 @@ export default defineContentScript({
     // the content script doesn't run on landing/search pages.
     'https://*.naukri.com/job-listings-*',
     'https://*.naukri.com/jobs/*',
+    'https://*.naukri.com/job/*',
     'https://*.foundit.in/job/*',
     'https://*.foundit.in/seeker/*',
     'https://*.monsterindia.com/job/*',
