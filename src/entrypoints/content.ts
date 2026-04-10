@@ -12,11 +12,9 @@ export default defineContentScript({
     'https://wellfound.com/company/*',
     'https://*.workable.com/j/*',
     'https://jobs.smartrecruiters.com/*',
-    // India market port — narrow to detail-page paths where possible so
-    // the content script doesn't run on landing/search pages.
-    'https://*.naukri.com/job-listings-*',
-    'https://*.naukri.com/jobs/*',
-    'https://*.naukri.com/job/*',
+    // India market port — run on all pages for major portals (the detector
+    // decides whether a job is present; badge stays hidden if not).
+    'https://*.naukri.com/*',
     'https://*.foundit.in/job/*',
     'https://*.foundit.in/seeker/*',
     'https://*.monsterindia.com/job/*',

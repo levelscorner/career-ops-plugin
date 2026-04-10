@@ -23,12 +23,10 @@ export const naukriDetector: Detector = {
   id: 'naukri',
 
   matches(url) {
-    return (
-      url.hostname.endsWith('naukri.com') &&
-      (/\/job-listings-/.test(url.pathname) ||
-        /\/jobs\//.test(url.pathname) ||
-        /\/job\//.test(url.pathname))
-    );
+    // Match any naukri.com page. The content script runs on all naukri.com
+    // URLs; extract() returns null if no job posting is found on the page,
+    // and the badge stays hidden.
+    return url.hostname.endsWith('naukri.com');
   },
 
   extract(): JobPosting | null {
