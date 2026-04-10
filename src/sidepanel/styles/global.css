@@ -57,16 +57,67 @@ body,
   color: var(--color-ink);
 }
 
-/* subtle atmospheric grain — gives the UI real texture */
+/* ---- animated gradient mesh background ---------------------------------- */
+@keyframes mesh-drift {
+  0% {
+    background-position: 0% 0%, 100% 100%, 50% 0%, center;
+  }
+  33% {
+    background-position: 30% 60%, 70% 30%, 80% 50%, center;
+  }
+  66% {
+    background-position: 60% 20%, 30% 70%, 20% 80%, center;
+  }
+  100% {
+    background-position: 0% 0%, 100% 100%, 50% 0%, center;
+  }
+}
+
+body {
+  background: var(--gradient-mesh);
+  background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+  animation: mesh-drift 30s ease-in-out infinite;
+}
+
+/* subtle atmospheric grain — reduced for dark luxury feel */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 100;
-  opacity: 0.035;
-  mix-blend-mode: multiply;
+  opacity: 0.02;
+  mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- glass utility class ------------------------------------------------ */
+.glass {
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+}
+
+/* ---- scrollbar styling -------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }
 
 button {
@@ -82,6 +133,27 @@ a:hover {
   text-decoration: underline;
 }
 
+/* ---- view transitions --------------------------------------------------- */
+::view-transition-old(root) {
+  animation: 200ms ease-out both fade-out;
+}
+::view-transition-new(root) {
+  animation: 200ms ease-out both fade-in;
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+    filter: blur(1px);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    filter: blur(1px);
+  }
+}
+
 /* reduced motion respect */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -90,5 +162,8 @@ a:hover {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  body {
+    animation: none;
   }
 }

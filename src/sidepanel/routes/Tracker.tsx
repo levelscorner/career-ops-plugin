@@ -14,7 +14,12 @@ export function Tracker() {
       <div className="flex items-baseline justify-between px-5 pt-5 pb-3">
         <h1
           className="font-[var(--font-display)] text-[var(--text-2xl)] font-medium tracking-tight"
-          style={{ color: 'var(--color-ink)' }}
+          style={{
+            background: 'linear-gradient(135deg, var(--color-ink), var(--color-ink-soft))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
         >
           Tracker
         </h1>
@@ -31,7 +36,7 @@ export function Tracker() {
       ) : (
         <div className="flex-1 overflow-y-auto px-4 pb-5 space-y-2">
           <AnimatePresence initial={false}>
-            {applications.map((app) => {
+            {applications.map((app, index) => {
               const band = scoreBand(app.score);
               const bandColor =
                 band === 'strong'
@@ -41,6 +46,16 @@ export function Tracker() {
                     : band === 'borderline'
                       ? 'var(--color-warning)'
                       : 'var(--color-danger)';
+              const glowStyle =
+                band === 'strong'
+                  ? '0 0 16px oklch(65% 0.17 145 / 0.3)'
+                  : band === 'good'
+                    ? '0 0 16px oklch(72% 0.18 55 / 0.3)'
+                    : band === 'borderline'
+                      ? '0 0 16px oklch(78% 0.16 85 / 0.2)'
+                      : '0 0 16px oklch(60% 0.22 28 / 0.2)';
+              const scorePercent = Math.min(100, (app.score / 5) * 100);
+
               return (
                 <motion.div
                   key={app.id}
@@ -48,25 +63,51 @@ export function Tracker() {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{
+                    duration: 0.3,
+                    ease: [0.16, 1, 0.3, 1],
+                    delay: index * 0.04,
+                  }}
                 >
                   <Link
                     to={`/report/${app.id}`}
-                    className="block rounded-[var(--radius-md)] border p-4 transition-all hover:-translate-y-[1px] hover:shadow-[var(--shadow-md)]"
+                    className="group block rounded-[var(--radius-lg)] border p-4 transition-all duration-[260ms] hover:-translate-y-[2px] relative overflow-hidden"
                     style={{
-                      borderColor: 'var(--color-border)',
-                      background: 'var(--color-surface-raised)',
+                      borderColor: 'var(--color-glass-border)',
+                      background: 'var(--color-glass)',
+                      backdropFilter: 'blur(var(--blur-md))',
+                      WebkitBackdropFilter: 'blur(var(--blur-md))',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = `var(--shadow-md), ${glowStyle}`;
+                      e.currentTarget.style.borderColor = 'oklch(72% 0.18 55 / 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = '';
+                      e.currentTarget.style.borderColor = '';
                     }}
                   >
+                    {/* thin score progress bar at top */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute top-0 left-0 h-[2px] transition-all duration-700"
+                      style={{
+                        width: `${scorePercent}%`,
+                        background: `linear-gradient(90deg, ${bandColor}, transparent)`,
+                        opacity: 0.6,
+                      }}
+                    />
                     <div className="flex items-start gap-4">
+                      {/* score badge with glow halo */}
                       <div
-                        className="flex-shrink-0 rounded-[var(--radius-sm)] w-12 h-12 flex flex-col items-center justify-center font-[var(--font-display)] font-semibold"
+                        className="flex-shrink-0 rounded-[var(--radius-md)] w-14 h-14 flex flex-col items-center justify-center font-[var(--font-display)] font-semibold relative"
                         style={{
                           background: 'var(--color-surface-sunk)',
                           color: bandColor,
+                          boxShadow: glowStyle,
                         }}
                       >
-                        <span className="text-[var(--text-lg)] leading-none tabular-nums">
+                        <span className="text-[var(--text-xl)] leading-none tabular-nums">
                           {app.score.toFixed(1)}
                         </span>
                       </div>
@@ -79,7 +120,7 @@ export function Tracker() {
                             {app.role}
                           </h3>
                           <span
-                            className="text-[var(--text-xs)] uppercase tracking-[0.08em]"
+                            className="text-[var(--text-xs)] uppercase tracking-[0.08em] shrink-0"
                             style={{ color: 'var(--color-ink-faint)' }}
                           >
                             {STATUS_LABELS[app.status]}

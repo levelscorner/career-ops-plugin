@@ -36,19 +36,24 @@ export function ToggleSection({ label, enabled, onToggle, children }: ToggleSect
           aria-labelledby={`${id}-label`}
           onClick={() => onToggle(!enabled)}
           onKeyDown={handleKeyDown}
-          className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-[var(--duration-fast)]"
+          className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-all duration-[var(--duration-fast)]"
           style={{
-            background: enabled ? 'var(--color-accent)' : 'var(--color-border)',
+            background: enabled
+              ? 'linear-gradient(135deg, var(--color-accent), var(--color-accent-strong))'
+              : 'var(--color-border)',
             minWidth: 44,
             minHeight: 44,
             padding: '9px 0',
           }}
         >
           <span
-            className="inline-block h-5 w-5 rounded-full shadow-[var(--shadow-sm)] transition-transform duration-[var(--duration-fast)]"
+            className="inline-block h-5 w-5 rounded-full transition-transform duration-[var(--duration-fast)]"
             style={{
               background: 'var(--color-surface)',
               transform: enabled ? 'translateX(22px)' : 'translateX(2px)',
+              boxShadow: enabled
+                ? '0 1px 4px oklch(0% 0 0 / 0.3), 0 0 8px oklch(72% 0.18 55 / 0.2)'
+                : 'var(--shadow-sm)',
             }}
           />
         </button>
@@ -60,7 +65,10 @@ export function ToggleSection({ label, enabled, onToggle, children }: ToggleSect
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              height: { type: 'spring', stiffness: 500, damping: 40 },
+              opacity: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
+            }}
             style={{ overflow: 'hidden' }}
           >
             <div className="px-4 pb-4">{children}</div>

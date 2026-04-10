@@ -24,6 +24,20 @@ const DEFAULT_TOGGLES: OutputToggles = {
   interviewTips: false,
 };
 
+const PROGRESS_STEPS = [
+  { key: 'archetype', label: 'Identifying archetype' },
+  { key: 'dimensions', label: 'Scoring dimensions' },
+  { key: 'matchCv', label: 'Matching CV' },
+  { key: 'northStar', label: 'Career alignment' },
+  { key: 'comp', label: 'Compensation' },
+  { key: 'cultural', label: 'Cultural fit' },
+  { key: 'redFlags', label: 'Red flags' },
+  { key: 'globalScore', label: 'Final score' },
+  { key: 'verdict', label: 'Verdict' },
+  { key: 'gaps', label: 'Gap analysis' },
+  { key: 'keywords', label: 'ATS keywords' },
+] as const;
+
 export function Evaluate() {
   const { status, buffer, result, error, reset } = useEvaluateStore();
   const navigate = useNavigate();
@@ -67,22 +81,42 @@ export function Evaluate() {
           description="Open a job posting in another tab and click the career-ops badge — or paste a JD below."
         >
           <Card className="w-full max-w-md p-4 space-y-3 text-left">
-            <label className="block text-[var(--text-xs)] font-medium uppercase tracking-[0.08em]" style={{ color: 'var(--color-ink-faint)' }}>
-              Paste JD (markdown or plain text)
-            </label>
-            <textarea
-              value={pasted}
-              onChange={(e) => setPasted(e.target.value)}
-              placeholder="Paste the full job description here…"
-              className="w-full min-h-[160px] p-3 rounded-[var(--radius-sm)] border text-[var(--text-sm)] resize-y bg-[var(--color-surface-sunk)]"
-              style={{ borderColor: 'var(--color-border)', color: 'var(--color-ink)' }}
-            />
+            {/* floating label textarea */}
+            <div className="relative">
+              <label
+                className="absolute left-3 top-2 text-[10px] font-medium uppercase tracking-[0.08em] pointer-events-none"
+                style={{ color: 'var(--color-ink-faint)' }}
+              >
+                Paste JD (markdown or plain text)
+              </label>
+              <textarea
+                value={pasted}
+                onChange={(e) => setPasted(e.target.value)}
+                placeholder="Paste the full job description here..."
+                className="w-full min-h-[160px] p-3 pt-7 rounded-[var(--radius-md)] border text-[var(--text-sm)] resize-y"
+                style={{
+                  borderColor: 'var(--color-glass-border)',
+                  background: 'var(--color-surface-sunk)',
+                  color: 'var(--color-ink)',
+                }}
+              />
+              <span
+                className="absolute right-3 bottom-3 text-[10px] tabular-nums"
+                style={{ color: 'var(--color-ink-faint)' }}
+              >
+                {pasted.length.toLocaleString()} chars
+              </span>
+            </div>
             <input
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="Source URL (optional)"
-              className="w-full h-9 px-3 rounded-[var(--radius-sm)] border text-[var(--text-sm)] bg-[var(--color-surface-sunk)]"
-              style={{ borderColor: 'var(--color-border)', color: 'var(--color-ink)' }}
+              className="w-full h-9 px-3 rounded-[var(--radius-md)] border text-[var(--text-sm)]"
+              style={{
+                borderColor: 'var(--color-glass-border)',
+                background: 'var(--color-surface-sunk)',
+                color: 'var(--color-ink)',
+              }}
             />
             <div className="flex justify-end">
               <Button
@@ -121,47 +155,104 @@ export function Evaluate() {
   // streaming or done — show live buffer and dial
   const streamProgress = status === 'streaming' ? parseStreamProgress(buffer) : null;
 
+  // Determine which progress steps are completed
+  const completedSteps = new Set<string>();
+  if (streamProgress) {
+    for (const s of PROGRESS_STEPS) {
+      if (buffer.includes(`"${s.key}"`)) {
+        completedSteps.add(s.key);
+      }
+    }
+  }
+
   return (
     <PageTransition>
-      <div className="px-5 pt-5 pb-3 flex items-center gap-5">
+      <div className="px-5 pt-5 pb-3 flex flex-col items-center gap-4">
+        {/* larger dial during streaming */}
         <ScoreDial
           score={result?.evaluation.globalScore ?? estimateScoreFromBuffer(buffer)}
-          size={96}
+          size={status === 'streaming' ? 120 : 96}
           streaming={status === 'streaming'}
         />
-        <div className="flex-1 min-w-0">
+        <div className="text-center min-w-0">
           <h2
             className="font-[var(--font-display)] text-[var(--text-xl)] font-medium tracking-tight"
             style={{ color: 'var(--color-ink)' }}
           >
-            {result?.application.role ?? 'Evaluating…'}
+            {result?.application.role ?? 'Evaluating...'}
           </h2>
           <p className="text-[var(--text-sm)] truncate" style={{ color: 'var(--color-ink-soft)' }}>
-            {result?.application.company ?? streamProgress?.step ?? 'Analyzing job description…'}
+            {result?.application.company ?? streamProgress?.step ?? 'Analyzing job description...'}
           </p>
-          {status === 'streaming' && streamProgress && (
-            <p className="text-[var(--text-xs)] mt-1" style={{ color: 'var(--color-ink-faint)' }}>
-              {streamProgress.tldr || (streamProgress.verdict
-                ? `Verdict: ${streamProgress.verdict}`
-                : `Scoring dimensions…`)}
-            </p>
-          )}
         </div>
       </div>
 
+      {/* vertical timeline during streaming */}
+      {status === 'streaming' && (
+        <div className="px-6 pb-4">
+          <div className="flex flex-col gap-0">
+            {PROGRESS_STEPS.map((s, i) => {
+              const done = completedSteps.has(s.key);
+              const isLast = i === PROGRESS_STEPS.length - 1;
+              return (
+                <div key={s.key} className="flex items-start gap-3">
+                  <div className="flex flex-col items-center">
+                    <motion.div
+                      animate={{
+                        background: done ? 'var(--color-accent)' : 'var(--color-border)',
+                        scale: done ? 1 : 0.7,
+                      }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{
+                        boxShadow: done ? '0 0 8px oklch(72% 0.18 55 / 0.4)' : 'none',
+                      }}
+                    />
+                    {!isLast && (
+                      <div
+                        className="w-[1px] h-3"
+                        style={{
+                          background: done ? 'var(--color-accent)' : 'var(--color-border)',
+                          opacity: done ? 0.5 : 0.2,
+                        }}
+                      />
+                    )}
+                  </div>
+                  <span
+                    className="text-[var(--text-xs)] -mt-0.5 pb-1"
+                    style={{
+                      color: done ? 'var(--color-ink-soft)' : 'var(--color-ink-faint)',
+                    }}
+                  >
+                    {s.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {result && (
         <div className="px-5 pb-3 grid grid-cols-2 gap-2">
-          {DIMENSION_KEYS.map((key) => {
+          {DIMENSION_KEYS.map((key, i) => {
             const dim = result.evaluation.dimensions[key];
             return (
               <motion.div
                 key={key}
-                initial={{ opacity: 0, y: 4 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-3 rounded-[var(--radius-sm)] border text-[var(--text-xs)]"
+                transition={{
+                  duration: 0.3,
+                  ease: [0.16, 1, 0.3, 1],
+                  delay: i * 0.08,
+                }}
+                className="p-3 rounded-[var(--radius-md)] border text-[var(--text-xs)]"
                 style={{
-                  background: 'var(--color-surface-raised)',
-                  borderColor: 'var(--color-border)',
+                  background: 'var(--color-glass)',
+                  borderColor: 'var(--color-glass-border)',
+                  backdropFilter: 'blur(var(--blur-sm))',
+                  WebkitBackdropFilter: 'blur(var(--blur-sm))',
                 }}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -172,7 +263,7 @@ export function Evaluate() {
                     {DIMENSION_LABELS[key]}
                   </span>
                   <span className="tabular-nums font-[var(--font-display)] font-semibold" style={{ color: 'var(--color-ink)' }}>
-                    {dim?.score?.toFixed(1) ?? '—'}
+                    {dim?.score?.toFixed(1) ?? '\u2014'}
                   </span>
                 </div>
                 <p style={{ color: 'var(--color-ink-soft)' }}>{dim?.rationale ?? ''}</p>
@@ -196,7 +287,7 @@ export function Evaluate() {
                     key={i}
                     className="text-[var(--text-xs)] p-2 rounded-[var(--radius-sm)] border"
                     style={{
-                      borderColor: 'var(--color-border)',
+                      borderColor: 'var(--color-glass-border)',
                       background: 'var(--color-surface-sunk)',
                     }}
                   >
@@ -293,11 +384,11 @@ export function Evaluate() {
             className="whitespace-pre-wrap font-[var(--font-mono)] text-[var(--text-xs)] leading-relaxed p-4 rounded-[var(--radius-md)] border"
             style={{
               background: 'var(--color-surface-sunk)',
-              borderColor: 'var(--color-border)',
+              borderColor: 'var(--color-glass-border)',
               color: 'var(--color-ink-soft)',
             }}
           >
-            {buffer || '…'}
+            {buffer || '\u2026'}
           </pre>
         </ToggleSection>
       </div>
@@ -334,19 +425,19 @@ function parseStreamProgress(buffer: string): {
   const verdictMatch = buffer.match(/"verdict"\s*:\s*"(strong|good|borderline|weak)"/);
   const tldrMatch = buffer.match(/"tldr"\s*:\s*"([^"]+)"/);
 
-  let step = 'Starting evaluation…';
-  if (hasKeywords) step = 'Extracting ATS keywords…';
-  else if (hasGaps) step = 'Identifying gaps…';
-  else if (hasTldr) step = 'Writing summary…';
-  else if (hasVerdict) step = 'Determining verdict…';
-  else if (hasGlobalScore) step = 'Computing overall score…';
-  else if (hasRedFlags) step = 'Checking red flags…';
-  else if (hasCultural) step = 'Assessing cultural fit…';
-  else if (hasComp) step = 'Analyzing compensation…';
-  else if (hasNorthStar) step = 'Evaluating career alignment…';
-  else if (hasMatchCv) step = 'Matching against CV…';
-  else if (hasDimensions) step = 'Scoring dimensions…';
-  else if (hasArchetype) step = 'Identifying role archetype…';
+  let step = 'Starting evaluation...';
+  if (hasKeywords) step = 'Extracting ATS keywords...';
+  else if (hasGaps) step = 'Identifying gaps...';
+  else if (hasTldr) step = 'Writing summary...';
+  else if (hasVerdict) step = 'Determining verdict...';
+  else if (hasGlobalScore) step = 'Computing overall score...';
+  else if (hasRedFlags) step = 'Checking red flags...';
+  else if (hasCultural) step = 'Assessing cultural fit...';
+  else if (hasComp) step = 'Analyzing compensation...';
+  else if (hasNorthStar) step = 'Evaluating career alignment...';
+  else if (hasMatchCv) step = 'Matching against CV...';
+  else if (hasDimensions) step = 'Scoring dimensions...';
+  else if (hasArchetype) step = 'Identifying role archetype...';
 
   return {
     step,

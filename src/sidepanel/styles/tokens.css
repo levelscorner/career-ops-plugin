@@ -1,35 +1,39 @@
 /* ============================================================================
    Design Tokens — career-ops-plugin
    ----------------------------------------------------------------------------
-   Editorial / luxury direction with warm accents and deep neutrals.
-   DO NOT use default Tailwind palette values — everything references these
-   custom properties so the design stays intentional, not template-looking.
-   Colors are in OKLCH for perceptual uniformity and predictable dark mode.
+   Dark Luxury Terminal direction. Warm amber accent, glass morphism surfaces,
+   atmospheric depth, fluid micro-interactions.
+   Colors are in OKLCH for perceptual uniformity.
    ========================================================================== */
 
 @theme {
-  /* ---- palette (light) --------------------------------------------------- */
-  --color-ink: oklch(18% 0.015 255);
-  --color-ink-soft: oklch(34% 0.012 255);
-  --color-ink-faint: oklch(58% 0.008 255);
-  --color-surface: oklch(98.5% 0.003 85);
-  --color-surface-raised: oklch(99.5% 0.004 85);
-  --color-surface-sunk: oklch(96% 0.005 85);
-  --color-border: oklch(88% 0.008 85);
-  --color-border-strong: oklch(74% 0.012 85);
+  /* ---- palette (dark-first) ----------------------------------------------- */
+  --color-ink: oklch(96% 0.008 85);
+  --color-ink-soft: oklch(82% 0.01 85);
+  --color-ink-faint: oklch(60% 0.01 85);
+  --color-surface: oklch(10% 0.012 255);
+  --color-surface-raised: oklch(15% 0.014 255);
+  --color-surface-sunk: oklch(8% 0.01 255);
+  --color-border: oklch(24% 0.015 255);
+  --color-border-strong: oklch(36% 0.018 255);
 
-  /* warm amber brand accent — matches source repo's warm-amber-v2 direction */
+  /* warm amber brand accent */
   --color-accent: oklch(72% 0.18 55);
-  --color-accent-soft: oklch(92% 0.05 55);
-  --color-accent-strong: oklch(54% 0.20 55);
+  --color-accent-soft: oklch(24% 0.08 55);
+  --color-accent-strong: oklch(82% 0.18 55);
 
-  /* semantic (score bands — tied to the 8 canonical states) */
+  /* semantic (score bands) */
   --color-success: oklch(65% 0.17 145);
-  --color-success-soft: oklch(93% 0.05 145);
+  --color-success-soft: oklch(20% 0.05 145);
   --color-warning: oklch(78% 0.16 85);
   --color-danger: oklch(60% 0.22 28);
-  --color-danger-soft: oklch(94% 0.04 28);
+  --color-danger-soft: oklch(20% 0.06 28);
   --color-info: oklch(66% 0.15 245);
+
+  /* glass morphism */
+  --color-glass: oklch(18% 0.012 255 / 0.7);
+  --color-glass-border: oklch(40% 0.02 255 / 0.15);
+  --color-glass-hover: oklch(24% 0.015 255 / 0.8);
 
   /* typography */
   --font-sans: 'DM Sans Variable', system-ui, -apple-system, sans-serif;
@@ -61,18 +65,38 @@
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 22px;
+  --radius-2xl: 28px;
+  --radius-3xl: 36px;
   --radius-full: 9999px;
 
   /* shadows — warm, soft, layered */
-  --shadow-xs: 0 1px 0 oklch(0% 0 0 / 0.04);
-  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.05), 0 1px 1px oklch(0% 0 0 / 0.04);
+  --shadow-xs: 0 1px 0 oklch(0% 0 0 / 0.2);
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3), 0 1px 1px oklch(0% 0 0 / 0.2);
   --shadow-md:
-    0 4px 8px oklch(0% 0 0 / 0.05), 0 2px 4px oklch(0% 0 0 / 0.04),
-    0 0 0 1px oklch(0% 0 0 / 0.03);
+    0 4px 8px oklch(0% 0 0 / 0.3), 0 2px 4px oklch(0% 0 0 / 0.2),
+    0 0 0 1px oklch(0% 0 0 / 0.1);
   --shadow-lg:
-    0 20px 40px oklch(0% 0 0 / 0.07), 0 6px 12px oklch(0% 0 0 / 0.05),
-    0 0 0 1px oklch(0% 0 0 / 0.04);
+    0 20px 40px oklch(0% 0 0 / 0.4), 0 6px 12px oklch(0% 0 0 / 0.3),
+    0 0 0 1px oklch(0% 0 0 / 0.1);
   --shadow-glow: 0 0 32px oklch(72% 0.18 55 / 0.35);
+  --shadow-accent: 0 4px 24px oklch(72% 0.18 55 / 0.15), 0 0 0 1px oklch(72% 0.18 55 / 0.08);
+
+  /* glow effects */
+  --glow-accent: 0 0 24px oklch(72% 0.18 55 / 0.3), 0 0 48px oklch(72% 0.18 55 / 0.1);
+  --glow-success: 0 0 24px oklch(65% 0.17 145 / 0.3), 0 0 48px oklch(65% 0.17 145 / 0.1);
+  --glow-danger: 0 0 24px oklch(60% 0.22 28 / 0.3), 0 0 48px oklch(60% 0.22 28 / 0.1);
+
+  /* backdrop blur */
+  --blur-sm: 8px;
+  --blur-md: 16px;
+  --blur-lg: 32px;
+
+  /* gradient mesh background */
+  --gradient-mesh:
+    radial-gradient(ellipse 80% 50% at 20% 20%, oklch(20% 0.06 55 / 0.5) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 80%, oklch(16% 0.04 255 / 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 60% 10%, oklch(18% 0.03 200 / 0.3) 0%, transparent 50%),
+    oklch(10% 0.012 255);
 
   /* motion */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -89,22 +113,25 @@
   --sidepanel-max: 720px;
 }
 
-/* ---- dark theme -------------------------------------------------------- */
-@media (prefers-color-scheme: dark) {
+/* ---- light theme override ------------------------------------------------ */
+@media (prefers-color-scheme: light) {
   @theme {
-    --color-ink: oklch(96% 0.008 85);
-    --color-ink-soft: oklch(82% 0.01 85);
-    --color-ink-faint: oklch(60% 0.01 85);
-    --color-surface: oklch(14% 0.01 255);
-    --color-surface-raised: oklch(18% 0.012 255);
-    --color-surface-sunk: oklch(11% 0.01 255);
-    --color-border: oklch(26% 0.015 255);
-    --color-border-strong: oklch(38% 0.018 255);
-    --color-accent: oklch(78% 0.17 60);
-    --color-accent-soft: oklch(28% 0.08 60);
-    --color-accent-strong: oklch(88% 0.18 60);
-    --color-success-soft: oklch(22% 0.05 145);
-    --color-danger-soft: oklch(22% 0.06 28);
+    --color-ink: oklch(18% 0.015 255);
+    --color-ink-soft: oklch(34% 0.012 255);
+    --color-ink-faint: oklch(58% 0.008 255);
+    --color-surface: oklch(98.5% 0.003 85);
+    --color-surface-raised: oklch(99.5% 0.004 85);
+    --color-surface-sunk: oklch(96% 0.005 85);
+    --color-border: oklch(88% 0.008 85);
+    --color-border-strong: oklch(74% 0.012 85);
+    --color-accent: oklch(72% 0.18 55);
+    --color-accent-soft: oklch(92% 0.05 55);
+    --color-accent-strong: oklch(54% 0.20 55);
+    --color-success-soft: oklch(93% 0.05 145);
+    --color-danger-soft: oklch(94% 0.04 28);
+    --color-glass: oklch(98% 0.004 85 / 0.7);
+    --color-glass-border: oklch(60% 0.01 85 / 0.15);
+    --color-glass-hover: oklch(96% 0.005 85 / 0.8);
   }
 }
 

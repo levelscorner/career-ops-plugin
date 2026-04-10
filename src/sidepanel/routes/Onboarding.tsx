@@ -25,7 +25,7 @@ export function Onboarding() {
     void getProfile().then((p) => setRegion(p.region));
   }, []);
 
-  if (!settings) return <div className="p-6 text-sm">Loading…</div>;
+  if (!settings) return <div className="p-6 text-sm">Loading...</div>;
 
   const next = () => setStep(STEPS[STEPS.indexOf(step) + 1] ?? 'ready');
   const back = () => setStep(STEPS[STEPS.indexOf(step) - 1] ?? 'welcome');
@@ -46,44 +46,95 @@ export function Onboarding() {
     navigate('/tracker');
   };
 
+  const currentIndex = STEPS.indexOf(step);
+
   return (
-    <div className="h-full flex items-center justify-center p-6">
-      <Card className="w-full max-w-md p-7">
-        <div className="flex items-center gap-2 mb-6">
-          {STEPS.map((s) => (
-            <div
-              key={s}
-              className="h-1 flex-1 rounded-full"
-              style={{
-                background:
-                  STEPS.indexOf(s) <= STEPS.indexOf(step)
-                    ? 'var(--color-accent)'
-                    : 'var(--color-border)',
-              }}
-            />
-          ))}
+    <div className="h-full flex items-center justify-center p-6 relative overflow-hidden">
+      {/* background dot pattern */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
+        <style>{`
+          @keyframes onboarding-float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.15; }
+            50% { transform: translateY(-8px) scale(1.1); opacity: 0.25; }
+          }
+        `}</style>
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              width: 3 + (i % 3) * 2,
+              height: 3 + (i % 3) * 2,
+              background: 'var(--color-accent)',
+              left: `${10 + (i * 7.3) % 80}%`,
+              top: `${15 + (i * 11.7) % 70}%`,
+              animation: `onboarding-float ${3 + (i % 3)}s ease-in-out infinite ${i * 0.3}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      <Card className="w-full max-w-md p-7 relative">
+        {/* step indicator — connected dots */}
+        <div className="flex items-center gap-0 mb-6">
+          {STEPS.map((s, i) => {
+            const isCompleted = i < currentIndex;
+            const isCurrent = i === currentIndex;
+            const isLast = i === STEPS.length - 1;
+            return (
+              <div key={s} className="flex items-center flex-1 last:flex-initial">
+                <motion.div
+                  animate={{
+                    background: isCompleted || isCurrent ? 'var(--color-accent)' : 'var(--color-border)',
+                    scale: isCurrent ? 1.3 : 1,
+                  }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{
+                    boxShadow: isCurrent ? '0 0 10px oklch(72% 0.18 55 / 0.5)' : 'none',
+                  }}
+                />
+                {!isLast && (
+                  <motion.div
+                    animate={{
+                      background: isCompleted
+                        ? 'var(--color-accent)'
+                        : 'var(--color-border)',
+                    }}
+                    transition={{ duration: 0.3 }}
+                    className="h-[2px] flex-1 mx-1 rounded-full"
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -24 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-4"
           >
             {step === 'welcome' && (
               <>
                 <h1
                   className="font-[var(--font-display)] text-[var(--text-3xl)] font-semibold leading-tight tracking-tight"
-                  style={{ color: 'var(--color-ink)' }}
+                  style={{
+                    background: 'linear-gradient(135deg, var(--color-accent), var(--color-ink))',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
                 >
                   Your job search, <br />
                   evaluated in seconds.
                 </h1>
                 <p className="text-[var(--text-sm)]" style={{ color: 'var(--color-ink-soft)' }}>
-                  career-ops scores every posting A–F against your CV, tracks the pipeline, and
+                  career-ops scores every posting A{'\u2013'}F against your CV, tracks the pipeline, and
                   generates ATS-ready PDFs — all inside your browser.
                 </p>
                 <Button intent="accent" size="lg" onClick={next} className="w-full">
@@ -112,11 +163,11 @@ export function Onboarding() {
                   type="password"
                   value={settings.anthropicApiKey}
                   onChange={(e) => void update({ anthropicApiKey: e.target.value })}
-                  placeholder="sk-ant-…"
-                  className="w-full h-10 px-3 rounded-[var(--radius-sm)] border font-[var(--font-mono)] text-[var(--text-sm)]"
+                  placeholder="sk-ant-..."
+                  className="w-full h-10 px-3 rounded-[var(--radius-md)] border font-[var(--font-mono)] text-[var(--text-sm)]"
                   style={{
                     background: 'var(--color-surface-sunk)',
-                    borderColor: 'var(--color-border)',
+                    borderColor: 'var(--color-glass-border)',
                     color: 'var(--color-ink)',
                   }}
                 />
@@ -148,10 +199,10 @@ export function Onboarding() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Full name"
-                  className="w-full h-10 px-3 rounded-[var(--radius-sm)] border text-[var(--text-sm)]"
+                  className="w-full h-10 px-3 rounded-[var(--radius-md)] border text-[var(--text-sm)]"
                   style={{
                     background: 'var(--color-surface-sunk)',
-                    borderColor: 'var(--color-border)',
+                    borderColor: 'var(--color-glass-border)',
                     color: 'var(--color-ink)',
                   }}
                 />
@@ -159,10 +210,10 @@ export function Onboarding() {
                   value={targetRoles}
                   onChange={(e) => setTargetRoles(e.target.value)}
                   placeholder="Target roles (e.g. AI Engineer, Head of Applied AI)"
-                  className="w-full h-10 px-3 rounded-[var(--radius-sm)] border text-[var(--text-sm)]"
+                  className="w-full h-10 px-3 rounded-[var(--radius-md)] border text-[var(--text-sm)]"
                   style={{
                     background: 'var(--color-surface-sunk)',
-                    borderColor: 'var(--color-border)',
+                    borderColor: 'var(--color-glass-border)',
                     color: 'var(--color-ink)',
                   }}
                 />
@@ -210,11 +261,11 @@ export function Onboarding() {
                         style={{
                           borderColor: selected
                             ? 'var(--color-accent)'
-                            : 'var(--color-border)',
+                            : 'var(--color-glass-border)',
                           background: selected
                             ? 'var(--color-accent-soft)'
                             : 'var(--color-surface-sunk)',
-                          boxShadow: selected ? 'var(--shadow-md)' : undefined,
+                          boxShadow: selected ? 'var(--shadow-accent)' : undefined,
                         }}
                       >
                         <div
@@ -260,10 +311,10 @@ export function Onboarding() {
                   value={cvText}
                   onChange={(e) => setCvText(e.target.value)}
                   placeholder="# Your Name&#10;&#10;## Summary&#10;..."
-                  className="w-full min-h-[180px] p-3 rounded-[var(--radius-sm)] border font-[var(--font-mono)] text-[var(--text-xs)] resize-y"
+                  className="w-full min-h-[180px] p-3 rounded-[var(--radius-md)] border font-[var(--font-mono)] text-[var(--text-xs)] resize-y"
                   style={{
                     background: 'var(--color-surface-sunk)',
-                    borderColor: 'var(--color-border)',
+                    borderColor: 'var(--color-glass-border)',
                     color: 'var(--color-ink)',
                   }}
                 />
@@ -282,7 +333,12 @@ export function Onboarding() {
               <>
                 <h2
                   className="font-[var(--font-display)] text-[var(--text-2xl)] font-medium"
-                  style={{ color: 'var(--color-ink)' }}
+                  style={{
+                    background: 'linear-gradient(135deg, var(--color-accent), var(--color-ink))',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
                 >
                   You're all set.
                 </h2>

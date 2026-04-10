@@ -12,7 +12,7 @@ import { Button } from '../components/ui/Button';
 import { ToggleSection } from '../components/ui/ToggleSection';
 import { useApplication } from '../hooks/useApplications';
 import { sendToBackground } from '../../shared/messages';
-import { STATUS_LABELS } from '../../shared/constants';
+import { scoreBand, STATUS_LABELS, SCORE_BAND_LABELS } from '../../shared/constants';
 import type { OutputToggles } from '../../shared/types';
 
 const DEFAULT_TOGGLES: OutputToggles = {
@@ -98,11 +98,31 @@ export function Report() {
     marked.parse(latest.markdown, { async: false }) as string,
   );
 
+  const band = scoreBand(application.score);
+  const verdictLabel = SCORE_BAND_LABELS[band];
+  const verdictColor = {
+    strong: { bg: 'var(--color-success-soft)', text: 'var(--color-success)' },
+    good: { bg: 'var(--color-accent-soft)', text: 'var(--color-accent)' },
+    borderline: { bg: 'var(--color-accent-soft)', text: 'var(--color-warning)' },
+    weak: { bg: 'var(--color-danger-soft)', text: 'var(--color-danger)' },
+  }[band];
+
   return (
     <PageTransition>
-      <div className="flex items-start gap-4 px-5 pt-5 pb-3">
-        <ScoreDial score={application.score} size={88} />
-        <div className="flex-1 min-w-0">
+      {/* score + verdict header */}
+      <div className="flex flex-col items-center gap-3 px-5 pt-5 pb-3">
+        <ScoreDial score={application.score} size={96} />
+        {/* large verdict pill */}
+        <span
+          className="inline-block px-4 py-1.5 rounded-[var(--radius-full)] text-[var(--text-xs)] font-semibold uppercase tracking-[0.06em]"
+          style={{
+            background: verdictColor.bg,
+            color: verdictColor.text,
+          }}
+        >
+          {verdictLabel}
+        </span>
+        <div className="text-center min-w-0 w-full">
           <h1
             className="font-[var(--font-display)] text-[var(--text-xl)] font-medium tracking-tight"
             style={{ color: 'var(--color-ink)' }}
@@ -119,34 +139,48 @@ export function Report() {
             className="text-[var(--text-xs)] mt-0.5"
             style={{ color: 'var(--color-ink-faint)' }}
           >
-            {STATUS_LABELS[application.status]} · {application.date}
+            {STATUS_LABELS[application.status]} {'\u00B7'} {application.date}
           </p>
-          <div className="flex gap-2 mt-3">
-            <Button
-              intent="accent"
-              size="sm"
-              onClick={() => {
-                void sendToBackground({ type: 'ui:generatePdf', applicationId: application.id });
-              }}
-            >
-              Generate CV PDF
+        </div>
+        {/* glass pill action buttons */}
+        <div className="flex gap-2 mt-1">
+          <Button
+            intent="accent"
+            size="sm"
+            onClick={() => {
+              void sendToBackground({ type: 'ui:generatePdf', applicationId: application.id });
+            }}
+          >
+            Generate CV PDF
+          </Button>
+          <a href={application.url} target="_blank" rel="noreferrer">
+            <Button intent="ghost" size="sm">
+              Open posting
             </Button>
-            <a href={application.url} target="_blank" rel="noreferrer">
-              <Button intent="ghost" size="sm">
-                Open posting
-              </Button>
-            </a>
-          </div>
+          </a>
         </div>
       </div>
 
-      <article
-        className="min-h-0 overflow-y-auto px-5 pb-4 prose prose-sm max-w-none"
-        style={{
-          color: 'var(--color-ink)',
-        }}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      {/* markdown report in glass card */}
+      <div className="px-5 pb-3">
+        <div
+          className="rounded-[var(--radius-lg)] border p-5"
+          style={{
+            backdropFilter: 'blur(var(--blur-md))',
+            WebkitBackdropFilter: 'blur(var(--blur-md))',
+            background: 'var(--color-glass)',
+            borderColor: 'var(--color-glass-border)',
+          }}
+        >
+          <article
+            className="prose prose-sm prose-invert max-w-none"
+            style={{
+              color: 'var(--color-ink)',
+            }}
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </div>
+      </div>
 
       <div className="px-5 pb-8 space-y-2">
         <ToggleSection
@@ -161,7 +195,7 @@ export function Report() {
                   key={i}
                   className="text-[var(--text-xs)] p-2 rounded-[var(--radius-sm)] border"
                   style={{
-                    borderColor: 'var(--color-border)',
+                    borderColor: 'var(--color-glass-border)',
                     background: 'var(--color-surface-sunk)',
                   }}
                 >
