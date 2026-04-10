@@ -58,22 +58,35 @@ export const naukriDetector: Detector = {
       }
     }
 
-    // DOM fallback. Naukri rotates classnames behind a CSS-module hash, so
-    // we query a set of stable-ish attributes and tag substrings.
+    // DOM fallback. Naukri's search results page is a split layout:
+    // job list on the left, detail panel on the right. The detail panel
+    // has .job-desc for the description. Title and company come from
+    // the first visible job tuple (a.title, a.comp-name).
+    //
+    // On dedicated detail pages (/job-listings-*), similar selectors
+    // work but with different class prefixes. We try multiple paths.
     const titleEl =
+      document.querySelector('a.title') ??
       document.querySelector('[class*="jd-header-title"]') ??
+      document.querySelector('.job-title a') ??
       document.querySelector('h1');
     const companyEl =
+      document.querySelector('a[class*="comp-name"]') ??
       document.querySelector('[class*="jd-header-comp-name"] a') ??
-      document.querySelector('[class*="jd-header-comp-name"]');
+      document.querySelector('[class*="comp-name"]');
     const locationEl =
-      document.querySelector('[class*="jhc__location"]') ??
-      document.querySelector('[class*="loc"] span');
-    const salaryEl = document.querySelector('[class*="salary"] span');
+      document.querySelector('[class*="loc-icon"] + span') ??
+      document.querySelector('[class*="location"]') ??
+      document.querySelector('[class*="jhc__location"]');
+    const salaryEl =
+      document.querySelector('[class*="salary"] span') ??
+      document.querySelector('[class*="sal-icon"] + span');
     const descriptionEl =
-      document.querySelector('[class*="JDC__dang-inner-html"]') ??
       document.querySelector('.job-desc') ??
-      document.querySelector('[class*="jobDescription"]');
+      document.querySelector('[class*="JDC__dang-inner-html"]') ??
+      document.querySelector('[class*="job-desc"]') ??
+      document.querySelector('[class*="jobDescription"]') ??
+      document.querySelector('[class*="description"]');
 
     const role = text(titleEl);
     const company = text(companyEl);
