@@ -37,6 +37,27 @@ export function ScoreDial({ score, size = 128, streaming = false }: Props) {
 
   return (
     <div className="relative inline-block" style={{ width: size, height: size }}>
+      {streaming && (
+        <style>{`
+          @keyframes score-dial-pulse {
+            0% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+            70% { opacity: 0; transform: translate(-50%, -50%) scale(1.45); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.45); }
+          }
+        `}</style>
+      )}
+      {streaming && (
+        <span
+          aria-hidden="true"
+          className="absolute left-1/2 top-1/2 rounded-full pointer-events-none"
+          style={{
+            width: size,
+            height: size,
+            border: '2px solid var(--color-accent)',
+            animation: 'score-dial-pulse 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite',
+          }}
+        />
+      )}
       <svg width={size} height={size} viewBox="0 0 128 128" className="-rotate-90">
         <circle
           cx="64"

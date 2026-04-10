@@ -1,20 +1,49 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useEvaluateStore } from '../stores/evaluate';
 import { PageTransition } from '../components/ui/PageTransition';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ScoreDial } from '../components/ui/ScoreDial';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { ToggleSection } from '../components/ui/ToggleSection';
 import { DIMENSION_KEYS, DIMENSION_LABELS } from '../../shared/constants';
 import { sendToBackground } from '../../shared/messages';
+import { getDb } from '../../background/storage/db';
+import { saveCustomization } from '../../background/storage/profile';
+import type { OutputToggles } from '../../shared/types';
+
+const DEFAULT_TOGGLES: OutputToggles = {
+  gaps: true,
+  keywords: true,
+  dealBreakers: true,
+  rawOutput: false,
+  salary: false,
+  interviewTips: false,
+};
 
 export function Evaluate() {
   const { status, buffer, result, error, reset } = useEvaluateStore();
   const navigate = useNavigate();
   const [pasted, setPasted] = useState('');
   const [url, setUrl] = useState('');
+
+  const customization = useLiveQuery(() => getDb().customization.get('singleton'), []);
+  const toggles: OutputToggles = {
+    ...DEFAULT_TOGGLES,
+    ...customization?.outputToggles,
+  };
+
+  const handleToggle = useCallback(
+    (key: keyof OutputToggles, next: boolean) => {
+      void saveCustomization({
+        outputToggles: { ...toggles, [key]: next },
+      });
+    },
+    [toggles],
+  );
 
   useEffect(() => {
     if (status === 'done' && result) {
@@ -138,17 +167,124 @@ export function Evaluate() {
         </div>
       )}
 
+      {status === 'done' && result && (
+        <div className="px-5 pb-3 space-y-2">
+          <ToggleSection
+            label="Gaps Analysis"
+            enabled={toggles.gaps}
+            onToggle={(next) => handleToggle('gaps', next)}
+          >
+            {result.evaluation.gaps.length > 0 ? (
+              <ul className="space-y-2">
+                {result.evaluation.gaps.map((gap, i) => (
+                  <li
+                    key={i}
+                    className="text-[var(--text-xs)] p-2 rounded-[var(--radius-sm)] border"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface-sunk)',
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className="inline-block px-1.5 py-0.5 rounded text-[10px] uppercase tracking-[0.06em] font-semibold"
+                        style={{
+                          background:
+                            gap.severity === 'blocker'
+                              ? 'var(--color-danger-soft)'
+                              : gap.severity === 'significant'
+                                ? 'var(--color-accent-soft)'
+                                : 'var(--color-surface-raised)',
+                          color:
+                            gap.severity === 'blocker'
+                              ? 'var(--color-danger)'
+                              : gap.severity === 'significant'
+                                ? 'var(--color-accent-strong)'
+                                : 'var(--color-ink-faint)',
+                        }}
+                      >
+                        {gap.severity}
+                      </span>
+                      <span style={{ color: 'var(--color-ink)' }}>{gap.requirement}</span>
+                    </div>
+                    <p style={{ color: 'var(--color-ink-soft)' }}>{gap.mitigation}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-[var(--text-xs)]" style={{ color: 'var(--color-ink-faint)' }}>
+                No gaps identified.
+              </p>
+            )}
+          </ToggleSection>
+
+          <ToggleSection
+            label="ATS Keywords"
+            enabled={toggles.keywords}
+            onToggle={(next) => handleToggle('keywords', next)}
+          >
+            {result.evaluation.keywords.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {result.evaluation.keywords.map((kw) => (
+                  <span
+                    key={kw}
+                    className="inline-block px-2 py-1 rounded-[var(--radius-sm)] text-[var(--text-xs)] font-medium"
+                    style={{
+                      background: 'var(--color-accent-soft)',
+                      color: 'var(--color-accent-strong)',
+                    }}
+                  >
+                    {kw}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[var(--text-xs)]" style={{ color: 'var(--color-ink-faint)' }}>
+                No keywords extracted.
+              </p>
+            )}
+          </ToggleSection>
+
+          {result.evaluation.dealBreakers.length > 0 && (
+            <ToggleSection
+              label="Deal Breakers"
+              enabled={toggles.dealBreakers}
+              onToggle={(next) => handleToggle('dealBreakers', next)}
+            >
+              <ul className="space-y-1">
+                {result.evaluation.dealBreakers.map((db, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2 text-[var(--text-xs)]"
+                    style={{ color: 'var(--color-danger)' }}
+                  >
+                    <span className="shrink-0 mt-0.5">&#x2715;</span>
+                    <span>{db}</span>
+                  </li>
+                ))}
+              </ul>
+            </ToggleSection>
+          )}
+        </div>
+      )}
+
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5">
-        <pre
-          className="whitespace-pre-wrap font-[var(--font-mono)] text-[var(--text-xs)] leading-relaxed p-4 rounded-[var(--radius-md)] border"
-          style={{
-            background: 'var(--color-surface-sunk)',
-            borderColor: 'var(--color-border)',
-            color: 'var(--color-ink-soft)',
-          }}
+        <ToggleSection
+          label="Raw Output"
+          enabled={status === 'streaming' ? true : toggles.rawOutput}
+          onToggle={(next) => handleToggle('rawOutput', next)}
         >
-          {buffer || '…'}
-        </pre>
+          <pre
+            className="whitespace-pre-wrap font-[var(--font-mono)] text-[var(--text-xs)] leading-relaxed p-4 rounded-[var(--radius-md)] border"
+            style={{
+              background: 'var(--color-surface-sunk)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-ink-soft)',
+            }}
+          >
+            {buffer || '…'}
+          </pre>
+        </ToggleSection>
       </div>
     </PageTransition>
   );

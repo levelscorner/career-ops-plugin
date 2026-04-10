@@ -121,6 +121,17 @@ export const zProfile = z.object({
   updatedAt: z.number(),
 });
 
+// ---- Output Toggles -----------------------------------------------------
+
+export const zOutputToggles = z.object({
+  gaps: z.boolean().default(true),
+  keywords: z.boolean().default(true),
+  dealBreakers: z.boolean().default(true),
+  rawOutput: z.boolean().default(false),
+  salary: z.boolean().default(false),
+  interviewTips: z.boolean().default(false),
+});
+
 // ---- Customization ------------------------------------------------------
 
 export const zCustomization = z.object({
@@ -138,6 +149,7 @@ export const zCustomization = z.object({
     )
     .default({}),
   dealBreakers: z.array(z.string()).default([]),
+  outputToggles: zOutputToggles.optional(),
   updatedAt: z.number(),
 });
 

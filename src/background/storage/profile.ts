@@ -1,7 +1,7 @@
 // Profile + customization + CV + article digest singletons.
 // Each table has exactly one row keyed 'singleton'.
 
-import type { ArticleDigest, Customization, Cv, Profile } from '../../shared/types';
+import type { ArticleDigest, Customization, Cv, OutputToggles, Profile } from '../../shared/types';
 import { DEFAULT_DIMENSION_WEIGHTS, type MarketRegion } from '../../shared/constants';
 import { getDb } from './db';
 
@@ -42,6 +42,15 @@ function buildDefaultProfile(): Profile {
   };
 }
 
+const DEFAULT_OUTPUT_TOGGLES: OutputToggles = Object.freeze({
+  gaps: true,
+  keywords: true,
+  dealBreakers: true,
+  rawOutput: false,
+  salary: false,
+  interviewTips: false,
+});
+
 const DEFAULT_CUSTOMIZATION: Customization = Object.freeze({
   id: 'singleton',
   archetypeOrder: [],
@@ -50,6 +59,7 @@ const DEFAULT_CUSTOMIZATION: Customization = Object.freeze({
   negotiationNotes: '',
   weightOverrides: { ...DEFAULT_DIMENSION_WEIGHTS },
   dealBreakers: [],
+  outputToggles: { ...DEFAULT_OUTPUT_TOGGLES },
   updatedAt: 0,
 });
 
@@ -76,7 +86,14 @@ export async function saveProfile(patch: Partial<Profile>): Promise<Profile> {
 export async function getCustomization(): Promise<Customization> {
   const db = getDb();
   const stored = await db.customization.get('singleton');
-  return stored ?? { ...DEFAULT_CUSTOMIZATION };
+  if (!stored) return { ...DEFAULT_CUSTOMIZATION };
+  // Backfill outputToggles for rows persisted before this field existed.
+  return {
+    ...stored,
+    outputToggles: stored.outputToggles
+      ? { ...DEFAULT_OUTPUT_TOGGLES, ...stored.outputToggles }
+      : { ...DEFAULT_OUTPUT_TOGGLES },
+  };
 }
 
 export async function saveCustomization(

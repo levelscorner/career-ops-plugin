@@ -154,6 +154,15 @@ export interface Profile {
   updatedAt: number;
 }
 
+export interface OutputToggles {
+  gaps: boolean;
+  keywords: boolean;
+  dealBreakers: boolean;
+  rawOutput: boolean;
+  salary: boolean;
+  interviewTips: boolean;
+}
+
 export interface Customization {
   id: 'singleton';
   /** User's own archetype ranking (most → least preferred). */
@@ -168,6 +177,8 @@ export interface Customization {
   weightOverrides: Partial<Record<DimensionKey, number>>;
   /** Deal-breakers the LLM should auto-SKIP. */
   dealBreakers: string[];
+  /** Which evaluation output sections are visible in Evaluate/Report views. */
+  outputToggles?: OutputToggles;
   updatedAt: number;
 }
 
