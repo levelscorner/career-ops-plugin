@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getDb } from '../background/storage/db';
 import type { Application } from '../shared/types';
+import { scoreBand } from '../shared/constants';
 
 interface PopupStats {
   total: number;
@@ -28,62 +29,109 @@ export default function Popup() {
     })();
   }, []);
 
+  const avgBand = stats.avg ? scoreBand(stats.avg) : null;
+  const avgColor = avgBand
+    ? { strong: 'var(--color-success)', good: 'var(--color-accent)', borderline: 'var(--color-warning)', weak: 'var(--color-danger)' }[avgBand]
+    : 'var(--color-ink-faint)';
+
   return (
     <div
       className="w-[320px] p-5 font-[var(--font-sans)]"
-      style={{ background: 'var(--color-surface)', color: 'var(--color-ink)' }}
+      style={{ background: 'var(--color-surface)', color: 'var(--color-ink)', colorScheme: 'dark' }}
     >
+      {/* header */}
       <div className="flex items-center gap-2 mb-4">
         <span
-          className="inline-block w-2 h-2 rounded-full"
-          style={{ background: 'var(--color-accent)' }}
+          className="inline-block w-2.5 h-2.5 rounded-full"
+          style={{ background: 'var(--color-accent)', boxShadow: '0 0 12px var(--color-accent)' }}
         />
-        <span className="font-[var(--font-display)] font-semibold tracking-tight">
+        <span
+          className="font-[var(--font-display)] font-semibold tracking-tight text-[var(--text-lg)]"
+          style={{
+            background: 'linear-gradient(135deg, var(--color-accent), var(--color-ink))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
           career-ops
         </span>
       </div>
+
+      {/* stats */}
       <div className="grid grid-cols-2 gap-2 text-[var(--text-sm)]">
-        <Stat label="Applications" value={String(stats.total)} />
-        <Stat label="Avg score" value={stats.avg ? stats.avg.toFixed(1) : '—'} />
+        <div
+          className="p-3 rounded-[var(--radius-md)] border"
+          style={{
+            background: 'var(--color-glass)',
+            borderColor: 'var(--color-glass-border)',
+            backdropFilter: 'blur(var(--blur-sm))',
+          }}
+        >
+          <div className="text-[10px] uppercase tracking-[0.1em]" style={{ color: 'var(--color-ink-faint)' }}>
+            Applications
+          </div>
+          <div className="font-[var(--font-display)] text-[var(--text-xl)] font-semibold tabular-nums">
+            {stats.total}
+          </div>
+        </div>
+        <div
+          className="p-3 rounded-[var(--radius-md)] border"
+          style={{
+            background: 'var(--color-glass)',
+            borderColor: 'var(--color-glass-border)',
+            backdropFilter: 'blur(var(--blur-sm))',
+          }}
+        >
+          <div className="text-[10px] uppercase tracking-[0.1em]" style={{ color: 'var(--color-ink-faint)' }}>
+            Avg Score
+          </div>
+          <div
+            className="font-[var(--font-display)] text-[var(--text-xl)] font-semibold tabular-nums"
+            style={{ color: avgColor }}
+          >
+            {stats.avg ? stats.avg.toFixed(1) : '\u2014'}
+          </div>
+        </div>
       </div>
+
+      {/* latest application */}
       {stats.latest && (
         <div
-          className="mt-3 p-3 rounded-[var(--radius-sm)] text-[var(--text-xs)]"
-          style={{ background: 'var(--color-surface-sunk)' }}
+          className="mt-3 p-3 rounded-[var(--radius-md)] border text-[var(--text-xs)]"
+          style={{
+            background: 'var(--color-glass)',
+            borderColor: 'var(--color-glass-border)',
+          }}
         >
-          <div style={{ color: 'var(--color-ink-faint)' }}>Most recent</div>
-          <div className="truncate font-medium">{stats.latest.role}</div>
+          <div className="text-[10px] uppercase tracking-[0.08em] mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+            Most recent
+          </div>
+          <div className="truncate font-medium" style={{ color: 'var(--color-ink)' }}>
+            {stats.latest.role}
+          </div>
           <div className="truncate" style={{ color: 'var(--color-ink-soft)' }}>
             {stats.latest.company}
           </div>
         </div>
       )}
+
+      {/* open side panel */}
       <button
-        onClick={() => chrome.runtime.sendMessage({ type: 'ui:ping' })}
-        className="w-full mt-4 h-9 rounded-[var(--radius-sm)] text-[var(--text-xs)] font-medium"
-        style={{ background: 'var(--color-ink)', color: 'var(--color-surface)' }}
+        onClick={() => {
+          if (chrome.sidePanel) {
+            chrome.sidePanel.open({ windowId: chrome.windows?.WINDOW_ID_CURRENT }).catch(() => undefined);
+          }
+        }}
+        className="w-full mt-4 h-10 rounded-[var(--radius-md)] text-[var(--text-xs)] font-semibold uppercase tracking-[0.06em] transition-all active:scale-[0.97]"
+        style={{
+          background: 'linear-gradient(135deg, var(--color-accent), var(--color-accent-strong))',
+          color: 'var(--color-surface)',
+          boxShadow: 'var(--shadow-accent)',
+        }}
       >
         Open side panel
       </button>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      className="p-3 rounded-[var(--radius-sm)]"
-      style={{ background: 'var(--color-surface-sunk)' }}
-    >
-      <div
-        className="text-[var(--text-xs)] uppercase tracking-[0.08em]"
-        style={{ color: 'var(--color-ink-faint)' }}
-      >
-        {label}
-      </div>
-      <div className="font-[var(--font-display)] text-[var(--text-xl)] font-semibold tabular-nums">
-        {value}
-      </div>
     </div>
   );
 }

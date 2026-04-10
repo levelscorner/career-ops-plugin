@@ -113,32 +113,31 @@
   --sidepanel-max: 720px;
 }
 
-/* ---- light theme override ------------------------------------------------ */
-@media (prefers-color-scheme: light) {
-  @theme {
-    --color-ink: oklch(18% 0.015 255);
-    --color-ink-soft: oklch(34% 0.012 255);
-    --color-ink-faint: oklch(58% 0.008 255);
-    --color-surface: oklch(98.5% 0.003 85);
-    --color-surface-raised: oklch(99.5% 0.004 85);
-    --color-surface-sunk: oklch(96% 0.005 85);
-    --color-border: oklch(88% 0.008 85);
-    --color-border-strong: oklch(74% 0.012 85);
-    --color-accent: oklch(72% 0.18 55);
-    --color-accent-soft: oklch(92% 0.05 55);
-    --color-accent-strong: oklch(54% 0.20 55);
-    --color-success-soft: oklch(93% 0.05 145);
-    --color-danger-soft: oklch(94% 0.04 28);
-    --color-glass: oklch(98% 0.004 85 / 0.7);
-    --color-glass-border: oklch(60% 0.01 85 / 0.15);
-    --color-glass-hover: oklch(96% 0.005 85 / 0.8);
-  }
-}
-
-/* explicit dark mode class for manual override */
-html[data-theme='dark'] {
-  color-scheme: dark;
-}
+/* ---- light theme (opt-in via data-theme="light") ------------------------- */
+/* Dark is the default. The "Dark Luxury Terminal" direction with glass
+   morphism, gradient mesh, and glow effects doesn't translate to light
+   backgrounds. Light mode is available via Settings toggle but NOT via
+   OS prefers-color-scheme to avoid the washed-out fallback. */
 html[data-theme='light'] {
   color-scheme: light;
+  --color-ink: oklch(18% 0.015 255);
+  --color-ink-soft: oklch(34% 0.012 255);
+  --color-ink-faint: oklch(58% 0.008 255);
+  --color-surface: oklch(98.5% 0.003 85);
+  --color-surface-raised: oklch(99.5% 0.004 85);
+  --color-surface-sunk: oklch(96% 0.005 85);
+  --color-border: oklch(88% 0.008 85);
+  --color-border-strong: oklch(74% 0.012 85);
+  --color-accent: oklch(72% 0.18 55);
+  --color-accent-soft: oklch(92% 0.05 55);
+  --color-accent-strong: oklch(54% 0.20 55);
+  --color-success-soft: oklch(93% 0.05 145);
+  --color-danger-soft: oklch(94% 0.04 28);
+  --color-glass: oklch(98% 0.004 85 / 0.7);
+  --color-glass-border: oklch(60% 0.01 85 / 0.15);
+  --color-glass-hover: oklch(96% 0.005 85 / 0.8);
+  --gradient-mesh:
+    radial-gradient(ellipse 80% 50% at 20% 20%, oklch(92% 0.04 55 / 0.3) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 80%, oklch(94% 0.02 255 / 0.2) 0%, transparent 60%),
+    oklch(98.5% 0.003 85);
 }
