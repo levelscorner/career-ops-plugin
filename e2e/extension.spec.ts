@@ -1,5 +1,5 @@
 /**
- * E2E tests for career-ops-plugin browser extension.
+ * E2E tests for Ronin browser extension.
  *
  * These tests launch Chromium with the built extension loaded via
  * --load-extension. They use a persistent browser context (required
@@ -75,7 +75,7 @@ test('side panel loads with onboarding on first run', async () => {
   // (depends on whether dev fixtures ran in the service worker)
   const body = await page.textContent('body');
   const hasContent =
-    body?.includes('career-ops') ||
+    body?.includes('Ronin') ||
     body?.includes('Welcome') ||
     body?.includes('Tracker') ||
     body?.includes('API key');
@@ -98,7 +98,7 @@ test('popup page loads', async () => {
   await page.screenshot({ path: 'e2e/screenshots/popup.png' });
 
   const body = await page.textContent('body');
-  expect(body?.includes('career-ops')).toBeTruthy();
+  expect(body?.includes('Ronin')).toBeTruthy();
 
   await page.close();
 });
@@ -188,7 +188,7 @@ test('content script badge appears on LinkedIn job page', async () => {
   await page.waitForTimeout(2000);
 
   // Check if the badge host element was injected into the page
-  const badgeHost = page.locator('#career-ops-badge-host');
+  const badgeHost = page.locator('#ronin-badge-host');
   const badgeExists = await badgeHost.count();
 
   await page.screenshot({ path: 'e2e/screenshots/linkedin-badge-check.png' });
@@ -202,7 +202,7 @@ test('content script badge appears on LinkedIn job page', async () => {
   await page.waitForTimeout(1000);
 
   // Filter out non-extension errors (LinkedIn's own JS errors)
-  const extensionErrors = pageErrors.filter((e) => e.includes('career-ops'));
+  const extensionErrors = pageErrors.filter((e) => e.includes('ronin'));
   expect(extensionErrors).toHaveLength(0);
 
   await page.close();

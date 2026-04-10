@@ -1,16 +1,16 @@
 import { defineConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
 
-// WXT config for career-ops-plugin. Cross-browser MV3 extension with React.
+// WXT config for Ronin. Cross-browser MV3 extension with React.
 // https://wxt.dev/api/config.html
 export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-react'],
   manifest: {
-    name: 'career-ops',
-    short_name: 'career-ops',
+    name: 'Ronin',
+    short_name: 'Ronin',
     description:
-      'AI-powered job search pipeline. Evaluate offers A-F, generate ATS CVs, track applications.',
+      'AI-powered job evaluation — score, track, and generate tailored CVs from any job posting.',
     version: '0.1.0',
 
     permissions: [
@@ -49,7 +49,7 @@ export default defineConfig({
       'https://api.anthropic.com/*',
     ],
     action: {
-      default_title: 'career-ops',
+      default_title: 'Ronin',
       default_popup: 'popup.html',
     },
     side_panel: {

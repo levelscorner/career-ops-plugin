@@ -54,7 +54,7 @@ export default function Popup() {
             backgroundClip: 'text',
           }}
         >
-          career-ops
+          Ronin
         </span>
       </div>
 

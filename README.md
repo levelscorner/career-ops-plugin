@@ -1,6 +1,6 @@
-# career-ops-plugin
+# Ronin
 
-> AI-powered job search pipeline as a Chrome/Firefox browser extension.
+> AI reconnaissance for your career.
 
 A browser-native port of [career-ops](https://github.com/santifer/career-ops) — the same A–F scoring, tracker, CV generation, and pipeline modes, but running as a cross-browser MV3 extension that lives next to the job postings you're already browsing.
 
@@ -19,7 +19,7 @@ Early development. See the `phases` list in `CLAUDE.md` for the roadmap. MVP goa
 
 ```bash
 git clone <this repo>
-cd career-ops-plugin
+cd ronin
 npm install
 npm run dev           # Chrome
 npm run dev:firefox   # Firefox
