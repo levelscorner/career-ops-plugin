@@ -32,4 +32,17 @@ export function main(): void {
       await getSettings(); // forces default write
     }
   });
+
+  // In dev mode, seed test fixtures so the pipeline works without onboarding.
+  // @ts-expect-error — import.meta.env.DEV is injected by Vite/WXT at build time
+  if (import.meta.env?.DEV) {
+    import('../fixtures/testProfile').then(({ seedDevFixtures }) =>
+      seedDevFixtures().then((seeded) => {
+        if (seeded) {
+          // eslint-disable-next-line no-console
+          console.log('[career-ops] dev fixtures seeded (profile + CV + customization)');
+        }
+      }),
+    ).catch(() => undefined);
+  }
 }
