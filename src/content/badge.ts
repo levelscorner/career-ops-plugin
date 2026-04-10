@@ -92,14 +92,27 @@ export function mountBadge(
   });
   shadow.appendChild(button);
 
+  // Only show badge when a job is actually detected.
+  host.style.display = initial ? 'block' : 'none';
   document.documentElement.appendChild(host);
   // Trigger entrance animation next frame so the transition runs.
-  requestAnimationFrame(() => button.classList.add('in'));
+  if (initial) {
+    requestAnimationFrame(() => button.classList.add('in'));
+  }
 
   return {
     update(job) {
       currentJob = job;
-      host.style.display = job ? 'block' : 'none';
+      if (job) {
+        host.style.display = 'block';
+        // Trigger entrance animation if not already visible.
+        if (!button.classList.contains('in')) {
+          requestAnimationFrame(() => button.classList.add('in'));
+        }
+      } else {
+        host.style.display = 'none';
+        button.classList.remove('in');
+      }
     },
     destroy() {
       host.remove();

@@ -1,5 +1,5 @@
 // WXT content script entrypoint. One script, many detectors — see ../content/*.
-import { defineContentScript } from 'wxt/sandbox';
+import { defineContentScript } from 'wxt/utils/define-content-script';
 import { mountContent } from '../content';
 
 export default defineContentScript({

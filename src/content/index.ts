@@ -1,7 +1,7 @@
 // Content script entry. Runs on every matched job host.
 // Extracts the current job → mounts the badge → re-extracts on SPA nav.
 
-import type { ContentScriptContext } from 'wxt/client';
+import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import type { JobPosting } from '../shared/types';
 import { extractCurrentJob } from './extractor';
 import { mountBadge } from './badge';

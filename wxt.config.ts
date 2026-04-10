@@ -12,7 +12,7 @@ export default defineConfig({
     description:
       'AI-powered job search pipeline. Evaluate offers A-F, generate ATS CVs, track applications.',
     version: '0.1.0',
-    default_locale: 'en',
+
     permissions: [
       'storage',
       'sidePanel',

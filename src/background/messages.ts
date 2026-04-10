@@ -14,15 +14,20 @@ import { runHealthCheck } from './verify/pipeline';
 import { AnthropicClient } from './llm/anthropic';
 
 export function installMessageRouter(): void {
-  chrome.runtime.onMessage.addListener((message: AnyMessage, _sender, sendResponse) => {
-    void handle(message)
-      .then((value) => sendResponse(value))
-      .catch((err) => sendResponse({ __error: (err as Error).message ?? String(err) }));
-    return true; // keep the channel open for async sendResponse
-  });
+  chrome.runtime.onMessage.addListener(
+    (message: AnyMessage, sender: chrome.runtime.MessageSender, sendResponse) => {
+      void handle(message, sender)
+        .then((value) => sendResponse(value))
+        .catch((err) => sendResponse({ __error: (err as Error).message ?? String(err) }));
+      return true; // keep the channel open for async sendResponse
+    },
+  );
 }
 
-async function handle(message: AnyMessage): Promise<unknown> {
+async function handle(
+  message: AnyMessage,
+  _sender: chrome.runtime.MessageSender,
+): Promise<unknown> {
   switch (message.type) {
     // ---- content script -------------------------------------------------
     case 'content:jobDetected':
@@ -30,8 +35,16 @@ async function handle(message: AnyMessage): Promise<unknown> {
       // auto-evaluate. The UI (badge click or side panel) triggers eval.
       return { ok: true };
 
-    case 'content:requestEvaluate':
+    case 'content:requestEvaluate': {
+      // Open the side panel so the user sees streaming results (or error).
+      const tab = _sender.tab;
+      if (tab?.id && tab.windowId) {
+        chrome.sidePanel
+          .open({ tabId: tab.id, windowId: tab.windowId })
+          .catch(() => undefined);
+      }
       return evaluateJob(message.job, (event) => broadcast(event));
+    }
 
     // ---- side panel / popup --------------------------------------------
     case 'ui:ping':
